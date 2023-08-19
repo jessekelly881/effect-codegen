@@ -7,6 +7,9 @@
     "removeComments": true,
     "moduleResolution": "node",
     "preserveConstEnums": true,
+    "types": [
+      "node"
+    ]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts"]
