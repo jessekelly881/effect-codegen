@@ -1,6 +1,8 @@
 import * as S from "@effect/schema/Schema";
-import * as Doc from "@effect/printer/Doc"
 import * as SchemaUtils from "./utils/Schema";
+import ts from "typescript";
+import * as TSFactoryUtils from "./utils/TSFactory";
+import { pipe } from "@effect/data/Function";
 
 const NullSchema = S.struct({ type: S.literal("null") })
 const BooleanSchema = S.struct({ type: S.literal("boolean") })
@@ -50,16 +52,28 @@ export type JSONSchema = S.To<typeof JSONSchema>
 
 export const ParseJsonSchema = SchemaUtils.ParseJson.pipe(S.compose(JSONSchema));
 
-export const toDoc = (schema: JSONSchema) => {
-    switch(schema.type) {
-        case "object": return Doc.text("S.object")
-        case "string": return Doc.text("S.string")
-        case "number": return Doc.text("S.number")
-        case "boolean": return Doc.text("S.boolean")
-        case "number": return Doc.text("S.number")
-        case "integer": return Doc.text("S.number.pipe(S.int())")
-        case "null": return Doc.text("S.null")
-        case "array": return Doc.text("S.array(S.unknown)")
+
+const toSchemaTsNode = (schema: JSONSchema): ts.Expression => {
+  switch(schema.type) {
+    case "boolean": return TSFactoryUtils.boolean
+    case "number": return TSFactoryUtils.number
+    case "string": return TSFactoryUtils.string
+    case "object": {
+      let properties: Record<string, ts.Expression> = {};
+      if(schema.properties) {
+        Object.keys(schema.properties).forEach((key) => {
+          properties[key] = toSchemaTsNode(schema.properties[key])
+        })
+        return TSFactoryUtils.struct(properties);
+      }
+      else return TSFactoryUtils.object
     }
-  return Doc.text("")
+    case "null": return TSFactoryUtils.null
+    case "array": return TSFactoryUtils.array(TSFactoryUtils.unknown)
+    case "integer": return pipe(TSFactoryUtils.number, TSFactoryUtils.callMethod("pipe", [TSFactoryUtils.int]))
+    default: return TSFactoryUtils.unknown
+  }
 }
+
+export const toSchemaString = (schema: JSONSchema): string => 
+  TSFactoryUtils.toString([toSchemaTsNode(schema)])

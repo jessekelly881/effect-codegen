@@ -4,15 +4,14 @@ import { flow, pipe } from "@effect/data/Function";
 import * as Log from "effect-log";
 import * as S from "@effect/schema/Schema";
 import * as JsonSchema from "./jsonSchema";
-import * as FsUtils from "./utils/Fs";
 
 
 const program = pipe(
   Fs.FileSystem,
   Effect.flatMap((fs) => fs.readFileString(`${__dirname}/test.json`)),
   Effect.flatMap(S.parse((JsonSchema.ParseJsonSchema))),
-  Effect.flatMap(s => FsUtils.writeFileDoc(`${__dirname}/out`, JsonSchema.toDoc(s))),
-  Effect.tap(() => Effect.logInfo("Updated"))
+  Effect.map(JsonSchema.toSchemaString),
+  Effect.tap((s) => Effect.logInfo(s))
 );
 
 

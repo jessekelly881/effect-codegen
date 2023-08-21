@@ -7,6 +7,7 @@
     "removeComments": true,
     "moduleResolution": "node",
     "preserveConstEnums": true,
+    "esModuleInterop": true,
     "types": [
       "node"
     ]

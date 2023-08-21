@@ -1,13 +1,17 @@
-import * as Render from "@effect/printer/Render"
 import * as _ from "../src/jsonSchema";
 import { describe, it, expect } from "vitest"
 
 
 const expectToRender = (schema: _.JSONSchema, result: string) => 
-    expect(Render.pretty(_.toDoc(schema), { lineWidth: 14 })).toEqual(result)
+    expect(_.toSchemaString(schema)).toEqual(result)
 
 describe("JSON Schema", () => {
     it("object", () => expectToRender({ type: "object" }, "S.object"))
+    it("object/ properties", () => {
+        const obj: _.JSONSchema = { type: "object", properties: { foo: { type: "string" } } }
+
+        expectToRender(obj, "S.struct({ foo: S.string })")
+    })
     it("string", () => expectToRender({ type: "string" }, "S.string"))
     it("number", () => expectToRender({ type: "number" }, "S.number"))
     it("boolean", () => expectToRender({ type: "boolean" }, "S.boolean"))
