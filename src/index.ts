@@ -3,24 +3,18 @@ import * as Fs from "@effect/platform-node/FileSystem"
 import { flow, pipe } from "@effect/data/Function";
 import * as Log from "effect-log";
 import * as S from "@effect/schema/Schema";
-import { ParseJson } from "./utils/json";
 import * as JsonSchema from "./jsonSchema";
+import * as FsUtils from "./utils/Fs";
 
-/**
- * Flatly parses the value of an Effect.
- * @param schema 
- * @returns 
- */
-const parseFlat = <I, A>(schema: S.Schema<I, A>) => Effect.flatMap(S.parse(schema))
 
-const readFile = pipe(
+const program = pipe(
   Fs.FileSystem,
-  Effect.flatMap((fs) => fs.readFile(`${__dirname}/test.json`)),
-  Effect.map((s) => new TextDecoder().decode(s)),
-
-  // FIXME: Composing the schemas throws "`partial` cannot handle transformations"
-  parseFlat(ParseJson.pipe(S.compose(JsonSchema.JSONSchema))),
+  Effect.flatMap((fs) => fs.readFileString(`${__dirname}/test.json`)),
+  Effect.flatMap(S.parse((JsonSchema.ParseJsonSchema))),
+  Effect.flatMap(s => FsUtils.writeFileDoc(`${__dirname}/out`, JsonSchema.toDoc(s))),
+  Effect.tap(() => Effect.logInfo("Updated"))
 );
+
 
 const run = flow(
   Effect.provideLayer(Fs.layer),
@@ -31,4 +25,4 @@ const run = flow(
   Effect.runPromise
 )
 
-run(readFile.pipe(Effect.flatMap((s) => Effect.log(s))))
+run(program)
