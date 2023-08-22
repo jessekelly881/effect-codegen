@@ -1,9 +1,14 @@
 {
-    "type": "object",
-    "title": "Hello",
-    "properties": {
-      "hello": {
-        "type": "string"
+  "$id": "http://your-domain.com/schemas/your-schema.json",
+  "description": "Example description",
+  "type": "object",
+  "properties": {
+    "first_name": { "type": "string" },
+    "address": {
+      "type": "object",
+      "properties": {
+        "street_address": { "type": "string" }
       }
     }
+  }
 }

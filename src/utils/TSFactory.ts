@@ -20,22 +20,22 @@ export const toString = (
     false,
     ts.ScriptKind.TS
   );
-  const printer = ts.createPrinter(printerOptions);
+  const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed, ...printerOptions });
 
   return printer.printList(
-    ts.ListFormat.MultiLine,
+    ts.ListFormat.PreferNewLine,
     ts.factory.createNodeArray(nodes),
     sourceFile
   ).trim();
 };
 
-const primitive = (name: string, call:boolean = false) => {
+export const primitive = (name: string, args?: ts.Expression[]) => {
   const e = ts.factory.createPropertyAccessExpression(
     ts.factory.createIdentifier("S"),
     ts.factory.createIdentifier(name)
   );
 
-  return call ? ts.factory.createCallExpression(e, undefined, []) : e
+  return args ? ts.factory.createCallExpression(e, undefined, args) : e
 }
 
 export const combinator =
@@ -72,11 +72,12 @@ export const object = primitive("object");
 export const array = combinator("array");
 export const union = combinator("union");
 export const tuple = combinator("tuple");
+export const literal = combinator("literal");
 
 export const unknown = primitive("unknown");
 export const null_ = primitive("null");
 
-export const int = primitive("int", true);
+export const int = primitive("int", []);
 
 export const struct = (properties: Record<string, ts.Expression>) =>
   combinator("struct")(

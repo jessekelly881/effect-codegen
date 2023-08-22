@@ -46,6 +46,7 @@
     "@effect/stream": "^0.34.0",
     "@effect/typeclass": "^0.3.0",
     "effect-log": "^0.12.1",
+    "effect-schema-compilers": "^0.0.17",
     "nodemon": "^3.0.1",
     "ts-node": "^10.9.1"
   }
