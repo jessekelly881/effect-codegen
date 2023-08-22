@@ -2,7 +2,7 @@ import * as _ from "../src/jsonSchema";
 import { describe, it, expect } from "vitest"
 
 
-const expectToRender = (schema: _.JSONSchema, result: string) => 
+const expectToRender = (schema: _.JsonSchema, result: string) => 
     expect(_.toSchemaString(schema)).toEqual(result)
 
 describe("JSON Schema", () => {
@@ -15,7 +15,7 @@ describe("JSON Schema", () => {
     it("array", () => expectToRender({ type: "array" }, "S.array(S.unknown)"))
 
     it("object/ properties", () => {
-        const obj: _.JSONSchema = { type: "object", properties: { foo: { type: "string" } } }
+        const obj: _.JsonSchema = { type: "object", properties: { foo: { type: "string" } } }
 
         expectToRender(obj, "S.struct({ foo: S.string })")
     })

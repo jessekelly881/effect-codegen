@@ -1,69 +1,26 @@
-import * as S from "@effect/schema/Schema";
-import * as SchemaUtils from "./utils/Schema";
 import ts from "typescript";
 import * as TSFactoryUtils from "./utils/TSFactory";
 import { pipe } from "@effect/data/Function";
-
-const NullSchema = S.struct({ type: S.literal("null") })
-const BooleanSchema = S.struct({ type: S.literal("boolean") })
-
-const StringSchema = S.struct({
-  type: S.literal("string"),
-});
-
-// number | integer
-const NumericSchema = S.extend( 
-  S.struct({ type: S.literal("number", "integer") }),
-  S.struct({
-    minimum: S.number,
-  }).pipe(S.partial)
-);
-
-interface ObjectSchema {
-    readonly type: "object";
-    readonly properties?: Record<string, JSONSchema>;
-    readonly required?: ReadonlyArray<string>
-}
-
-const ObjectSchema: S.Schema<ObjectSchema> = S.lazy(() =>
-  S.extend(
-    S.struct({ type: S.literal("object") }),
-    S.struct({
-      properties: S.record(S.string, JSONSchema),
-      required: S.array(S.string),
-    }).pipe(S.partial)
-  )
-);
-
-interface ArraySchema {
-    readonly type: "array";
-    readonly items?: JSONSchema | ReadonlyArray<JSONSchema>;
-    readonly uniqueItems?: boolean;
-    readonly contains?: JSONSchema
-}
-const ArraySchema: S.Schema<ArraySchema> = S.lazy(() => S.extend(
-  S.struct({ type: S.literal("array") }),
-  S.struct({
-    items: S.union(JSONSchema, S.array(JSONSchema)),
-    uniqueItems: S.boolean,
-  }).pipe(S.partial)
-));
-
-export const JSONSchema = S.union(
-    NullSchema,
-    StringSchema,
-    NumericSchema,
-    BooleanSchema,
-    ObjectSchema,
-    ArraySchema
-)
-
-export type JSONSchema = S.To<typeof JSONSchema>
-
-export const ParseJsonSchema = SchemaUtils.ParseJson.pipe(S.compose(JSONSchema));
+import * as Effect from "@effect/io/Effect";
+import * as RefParser from "@apidevtools/json-schema-ref-parser";
 
 
-const toSchemaTsNode = (schema: JSONSchema): ts.Expression => {
+export const decodeSchema = (val: unknown) => Effect.async<never, Error, JsonSchema>((resume) => { 
+  RefParser.parse(val, (err, schema) => {
+    if(!err && "type" in schema) {
+      resume(Effect.succeed(schema))
+    }
+    else {
+      resume(Effect.fail(err)) 
+    }
+  })
+})
+
+
+
+export type JsonSchema = Exclude<Parameters<typeof RefParser.dereference>[1], string>
+
+const toSchemaTsNode = (schema: JsonSchema): ts.Expression => {
   switch(schema.type) {
     case "boolean": return TSFactoryUtils.boolean
     case "number": {
@@ -76,7 +33,7 @@ const toSchemaTsNode = (schema: JSONSchema): ts.Expression => {
         const required = schema.required;
 
         Object.keys(schema.properties).forEach((key) => {
-          properties[key] = toSchemaTsNode(schema.properties[key])
+          properties[key] = toSchemaTsNode(schema.properties[key] as JsonSchema)
         })
         return TSFactoryUtils.struct(properties);
       }
@@ -88,5 +45,5 @@ const toSchemaTsNode = (schema: JSONSchema): ts.Expression => {
   }
 }
 
-export const toSchemaString = (schema: JSONSchema): string => 
+export const toSchemaString = (schema: JsonSchema): string => 
   TSFactoryUtils.toString([toSchemaTsNode(schema)])
