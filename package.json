@@ -34,6 +34,7 @@
     "vitest": "^0.29.3"
   },
   "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "^10.1.0",
     "@effect/data": "^0.17.5",
     "@effect/docgen": "^0.1.1",
     "@effect/io": "^0.38.2",

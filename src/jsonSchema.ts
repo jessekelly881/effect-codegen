@@ -11,19 +11,28 @@ const StringSchema = S.struct({
   type: S.literal("string"),
 });
 
-const NumericSchema = S.struct({ // number | integer
-  type: S.literal("number", "integer"),
-});
+// number | integer
+const NumericSchema = S.extend( 
+  S.struct({ type: S.literal("number", "integer") }),
+  S.struct({
+    minimum: S.number,
+  }).pipe(S.partial)
+);
 
 interface ObjectSchema {
     readonly type: "object";
-    readonly properties?: Record<string, JSONSchema>
+    readonly properties?: Record<string, JSONSchema>;
+    readonly required?: ReadonlyArray<string>
 }
 
 const ObjectSchema: S.Schema<ObjectSchema> = S.lazy(() =>
-  S.struct({
-    properties: S.record(S.string, JSONSchema),
-  }).pipe(S.partial, S.extend(S.struct({ type: S.literal("object") })))
+  S.extend(
+    S.struct({ type: S.literal("object") }),
+    S.struct({
+      properties: S.record(S.string, JSONSchema),
+      required: S.array(S.string),
+    }).pipe(S.partial)
+  )
 );
 
 interface ArraySchema {
@@ -32,12 +41,13 @@ interface ArraySchema {
     readonly uniqueItems?: boolean;
     readonly contains?: JSONSchema
 }
-const ArraySchema: S.Schema<ArraySchema> = S.lazy(() =>
+const ArraySchema: S.Schema<ArraySchema> = S.lazy(() => S.extend(
+  S.struct({ type: S.literal("array") }),
   S.struct({
     items: S.union(JSONSchema, S.array(JSONSchema)),
     uniqueItems: S.boolean,
-  }).pipe(S.partial, S.extend(S.struct({ type: S.literal("array") })))
-);
+  }).pipe(S.partial)
+));
 
 export const JSONSchema = S.union(
     NullSchema,
@@ -46,7 +56,7 @@ export const JSONSchema = S.union(
     BooleanSchema,
     ObjectSchema,
     ArraySchema
-).pipe(S.partial)
+)
 
 export type JSONSchema = S.To<typeof JSONSchema>
 
@@ -56,11 +66,15 @@ export const ParseJsonSchema = SchemaUtils.ParseJson.pipe(S.compose(JSONSchema))
 const toSchemaTsNode = (schema: JSONSchema): ts.Expression => {
   switch(schema.type) {
     case "boolean": return TSFactoryUtils.boolean
-    case "number": return TSFactoryUtils.number
+    case "number": {
+      return TSFactoryUtils.number
+    }
     case "string": return TSFactoryUtils.string
     case "object": {
       let properties: Record<string, ts.Expression> = {};
       if(schema.properties) {
+        const required = schema.required;
+
         Object.keys(schema.properties).forEach((key) => {
           properties[key] = toSchemaTsNode(schema.properties[key])
         })
@@ -71,7 +85,6 @@ const toSchemaTsNode = (schema: JSONSchema): ts.Expression => {
     case "null": return TSFactoryUtils.null
     case "array": return TSFactoryUtils.array(TSFactoryUtils.unknown)
     case "integer": return pipe(TSFactoryUtils.number, TSFactoryUtils.callMethod("pipe", [TSFactoryUtils.int]))
-    default: return TSFactoryUtils.unknown
   }
 }
 

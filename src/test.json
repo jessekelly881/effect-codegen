@@ -1,5 +1,6 @@
 {
     "type": "object",
+    "title": "Hello",
     "properties": {
       "hello": {
         "type": "string"

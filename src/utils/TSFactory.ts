@@ -81,11 +81,9 @@ export const int = primitive("int", true);
 export const struct = (properties: Record<string, ts.Expression>) =>
   combinator("struct")(
     ts.factory.createObjectLiteralExpression(Object.keys(properties).map(s => 
-      ts.factory.createPropertyAssignment(s, properties[s]),
+      ts.factory.createPropertyAssignment(s, properties[s])
     )
   ))
-
-
 
 export {
     null_ as null,
