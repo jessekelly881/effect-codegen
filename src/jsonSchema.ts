@@ -31,6 +31,7 @@ export const decodeSchema = (val: unknown) => Effect.async<never, Error, JsonSch
 
 const toSchemaTsNode = (schema: JsonSchema): ts.Expression => {
   let filters: ts.Expression[] = [];
+  let root = TSFactoryUtils.unknown; 
 
   const applyFilters = (node: ts.Expression) =>
     filters.length > 0
@@ -43,7 +44,7 @@ const toSchemaTsNode = (schema: JsonSchema): ts.Expression => {
 
     case "integer":
     case "number": {
-      var root = TSFactoryUtils.number; 
+      root = TSFactoryUtils.number; 
 
       if(schema.enum) {
         root = TSFactoryUtils.combinator("literal")( 
@@ -90,7 +91,7 @@ const toSchemaTsNode = (schema: JsonSchema): ts.Expression => {
       return applyFilters(root)
     }
     case "string": {
-      var root = TSFactoryUtils.string; 
+      root = TSFactoryUtils.string; 
 
       if(schema.enum) {
         root = TSFactoryUtils.combinator("literal")( 
