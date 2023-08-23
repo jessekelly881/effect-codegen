@@ -6,13 +6,10 @@ const expectToRender = (schema: _.JsonSchema, result: string) =>
     expect(_.toSchemaString(schema)).toEqual(result)
 
 describe("JSON Schema", () => {
-    it("object", () => expectToRender({ type: "object" }, "S.object"))
-    it("string", () => expectToRender({ type: "string" }, "S.string"))
-    it("number", () => expectToRender({ type: "number" }, "S.number"))
     it("boolean", () => expectToRender({ type: "boolean" }, "S.boolean"))
-    it("integer", () => expectToRender({ type: "integer" }, "S.number.pipe(S.int())"))
     it("null", () => expectToRender({ type: "null" }, "S.null"))
-    it("array", () => expectToRender({ type: "array" }, "S.array(S.unknown)"))
+
+    it("object", () => expectToRender({ type: "object" }, "S.object"))
 
     it("object/ properties", () => {
       const obj: _.JsonSchema = {
@@ -22,6 +19,11 @@ describe("JSON Schema", () => {
 
       expectToRender(obj, "S.struct({ foo: S.string })");
     });
+
+    // numbers
+
+    it("number", () => expectToRender({ type: "number" }, "S.number"))
+    it("integer", () => expectToRender({ type: "integer" }, "S.number.pipe(S.int())"))
 
     it("number/ minimum", () =>
       expectToRender(
@@ -53,6 +55,16 @@ describe("JSON Schema", () => {
         "S.number.pipe(S.int(), S.greaterThanOrEqualTo(4))"
       ));
 
+    it("number/ enum", () => 
+      expectToRender(
+        { type: "number", enum: [1, 2] },
+        "S.literal(1, 2)"
+      ));
+
+    // strings
+
+    it("string", () => expectToRender({ type: "string" }, "S.string"))
+
     it("string/ minLength", () =>
       expectToRender(
         { type: "string", minLength: 4 },
@@ -76,6 +88,14 @@ describe("JSON Schema", () => {
         { type: "string", pattern: "^[a-z]+$" },
         "S.string.pipe(S.pattern(/^[a-z]+$/))"
       ));
+    
+    it("string/ enum", () =>
+      expectToRender(
+        { type: "string", enum: ["foo", "bar"] },
+        'S.literal("foo", "bar")'
+      ));
+    
+    it("array", () => expectToRender({ type: "array" }, "S.array(S.unknown)"))
 
     it("array/ maxItems", () =>
       expectToRender(
@@ -95,33 +115,21 @@ describe("JSON Schema", () => {
         "S.array(S.unknown).pipe(S.itemsCount(4))"
       ));
 
-    it("array/ string items", () =>
+    it("array/ items(string)", () =>
       expectToRender(
         { type: "array", items: { type: "string", minLength: 2 } },
         "S.array(S.string.pipe(S.minLength(2)))"
       ));
 
-    it("array/ object items", () =>
+    it("array/ items(object)", () =>
       expectToRender(
         { type: "array", items: { type: "object", properties: { foo: { type: "string" } } } },
         "S.array(S.struct({ foo: S.string }))"
       ));
 
-    it("tuple", () =>
+    it("array/ items(string, number)", () =>
       expectToRender(
         { type: "array", items: [{ type: "string" }, { type: "number" }] },
         "S.tuple(S.string, S.number)"
-      ));
-
-    it("string/ enum", () =>
-      expectToRender(
-        { type: "string", enum: ["foo", "bar"] },
-        'S.literal("foo", "bar")'
-      ));
-
-    it("number/ enum", () => 
-      expectToRender(
-        { type: "number", enum: [1, 2] },
-        "S.literal(1, 2)"
       ));
 })
