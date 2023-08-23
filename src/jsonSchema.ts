@@ -188,6 +188,15 @@ const toSchemaTsNode = (schema: JsonSchema): ts.Expression => {
         TSFactoryUtils.array(items)
       );
     }
+
+    default: {
+      // oneOf 
+      if(schema.oneOf && !isBoolean(schema.oneOf)) {
+        return TSFactoryUtils.union(
+          ...schema.oneOf.map((s) => toSchemaTsNode(s as any))
+        )
+      }
+    }
   }
 };
 
@@ -208,7 +217,6 @@ export const toFile = (schema: JsonSchema, config: Config = defaultConfig): stri
       ts.factory.createStringLiteral("@effect/schema/Schema"),
       undefined
     ),
-    ts.factory.createJSDocComment(schema.description,[]),
     ts.factory.createVariableStatement(
       [ts.factory.createToken(ts.SyntaxKind.ExportKeyword)],
       ts.factory.createVariableDeclarationList(

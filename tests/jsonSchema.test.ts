@@ -132,4 +132,15 @@ describe("JSON Schema", () => {
         { type: "array", items: [{ type: "string" }, { type: "number" }] },
         "S.tuple(S.string, S.number)"
       ));
+
+    it("oneOf", () =>{
+      const schema: _.JsonSchema = {
+        oneOf: [
+          { type: "string" },
+          { type: "number" },
+        ]
+      }
+
+      expectToRender(schema, "S.union(S.string, S.number)")
+    })
 })
