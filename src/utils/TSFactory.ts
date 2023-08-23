@@ -1,14 +1,5 @@
 import ts from "typescript";
 
-export const addJsDocComment = (node: ts.Node, documentation: string): void => {
-  ts.addSyntheticLeadingComment(
-    node,
-    ts.SyntaxKind.MultiLineCommentTrivia,
-    `* ${documentation} `,
-    true
-  );
-};
-
 export const toString = (
   nodes: ts.Node[],
   printerOptions?: ts.PrinterOptions

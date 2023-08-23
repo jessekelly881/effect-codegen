@@ -4,6 +4,18 @@ import { pipe } from "@effect/data/Function";
 import * as Effect from "@effect/io/Effect";
 import * as RefParser from "@apidevtools/json-schema-ref-parser";
 import { isBoolean } from "@effect/data/Predicate";
+import * as StringUtils from "./utils/string";
+
+
+export type JsonSchema = Exclude<Parameters<typeof RefParser.dereference>[1], string>
+
+interface Config {
+  transformTitle: (title: string) => string
+}
+
+const defaultConfig: Config = {
+  transformTitle: StringUtils.toPascalCase
+}
 
 
 export const decodeSchema = (val: unknown) => Effect.async<never, Error, JsonSchema>((resume) => { 
@@ -16,10 +28,6 @@ export const decodeSchema = (val: unknown) => Effect.async<never, Error, JsonSch
     }
   })
 })
-
-
-
-export type JsonSchema = Exclude<Parameters<typeof RefParser.dereference>[1], string>
 
 const toSchemaTsNode = (schema: JsonSchema): ts.Expression => {
   let filters: ts.Expression[] = [];
@@ -184,3 +192,34 @@ const toSchemaTsNode = (schema: JsonSchema): ts.Expression => {
 
 export const toSchemaString = (schema: JsonSchema): string =>
   TSFactoryUtils.toString([toSchemaTsNode(schema)]);
+
+export const toFile = (schema: JsonSchema, config: Config = defaultConfig): string => {
+  const title = schema.title ? config.transformTitle(schema.title) : "Schema";
+
+  return TSFactoryUtils.toString([
+    ts.factory.createImportDeclaration(
+      undefined,
+      ts.factory.createImportClause(
+        false,
+        undefined,
+        ts.factory.createNamespaceImport(ts.factory.createIdentifier("S"))
+      ),
+      ts.factory.createStringLiteral("@effect/schema/Schema"),
+      undefined
+    ),
+    ts.factory.createJSDocComment(schema.description,[]),
+    ts.factory.createVariableStatement(
+      [ts.factory.createToken(ts.SyntaxKind.ExportKeyword)],
+      ts.factory.createVariableDeclarationList(
+        [ts.factory.createVariableDeclaration(
+          ts.factory.createIdentifier(title),
+          undefined,
+          undefined,
+          toSchemaTsNode(schema),      
+        )],
+        ts.NodeFlags.Const
+      )
+    ),
+  ]);
+
+}

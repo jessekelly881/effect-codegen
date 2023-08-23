@@ -1,7 +1,8 @@
 {
   "$id": "http://your-domain.com/schemas/your-schema.json",
-  "description": "Example description",
+  "description": "JSON Meta Schema",
   "type": "object",
+  "title": "JSON Schema",
   "properties": {
     "first_name": { "type": "string" },
     "address": {
