@@ -181,7 +181,9 @@ const toSchemaTsNode = (schema: JsonSchema, config: Config = defaultConfig): ts.
         const key = Object.keys(schema.patternProperties)[0];
 
         root = TSFactoryUtils.combinator("record")(
-          pipe(toSchemaTsNode(schema.patternProperties[key] as JsonSchema), TSFactoryUtils.callMethod("pipe", [
+          pipe(
+            TSFactoryUtils.string, 
+            TSFactoryUtils.callMethod("pipe", [
             TSFactoryUtils.primitive("pattern", [
               ts.factory.createRegularExpressionLiteral(`/${key}/`),
             ])

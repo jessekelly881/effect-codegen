@@ -53,10 +53,10 @@ describe("JSON Schema", () => {
     it("object/ patternProperties", () => {
       const obj: _.JsonSchema = {
         type: "object",
-        patternProperties: { "^S_": { type: "string" } },
+        patternProperties: { "^S_": { type: "object" } },
       };
 
-      expectToRender(obj, "S.record(S.string.pipe(S.pattern(/^S_/)), S.string)");
+      expectToRender(obj, "S.record(S.string.pipe(S.pattern(/^S_/)), S.object)");
     })
 
     // numbers
