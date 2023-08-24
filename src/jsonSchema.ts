@@ -289,6 +289,21 @@ export const toFile = (schema: JsonSchema, config: Config = defaultConfig): stri
         ts.NodeFlags.Const
       )
     ),
+    ts.factory.createTypeAliasDeclaration(
+      [ts.factory.createToken(ts.SyntaxKind.ExportKeyword)],
+      ts.factory.createIdentifier(title),
+      undefined,
+      ts.factory.createTypeReferenceNode(
+        ts.factory.createQualifiedName(
+          ts.factory.createIdentifier("S"),
+          ts.factory.createIdentifier("To")
+        ),
+        [ts.factory.createTypeQueryNode(
+          ts.factory.createIdentifier(title),
+          undefined
+        )]
+      )
+    )
   ]);
 
 }
