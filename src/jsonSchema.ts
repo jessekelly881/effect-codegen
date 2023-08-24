@@ -29,9 +29,35 @@ export const decodeSchema = (val: unknown) => Effect.async<never, Error, JsonSch
   })
 })
 
-const toSchemaTsNode = (schema: JsonSchema): ts.Expression => {
+const toSchemaTsNode = (schema: JsonSchema, config: Config = defaultConfig): ts.Expression => {
   let filters: ts.Expression[] = [];
   let root = TSFactoryUtils.unknown; 
+
+  if(schema.title) {
+    filters.push(
+      TSFactoryUtils.primitive("title", [
+        ts.factory.createStringLiteral(schema.title),
+      ])
+    )
+  }
+
+  if(schema.description) {
+    filters.push(
+      TSFactoryUtils.primitive("description", [
+        ts.factory.createStringLiteral(schema.description),
+      ])
+    )
+  }
+
+  if(schema.examples) {
+    filters.push(
+      TSFactoryUtils.primitive("examples", [
+        ts.factory.createArrayLiteralExpression(
+          schema.examples.map((e:any) => ts.factory.createStringLiteral(e.toString()))
+        ),
+      ])
+    )
+  }
 
   const applyFilters = (node: ts.Expression) =>
     filters.length > 0
@@ -135,15 +161,40 @@ const toSchemaTsNode = (schema: JsonSchema): ts.Expression => {
       return applyFilters(root)
     }
     case "object": {
+      const required = Array.isArray(schema.required) ? schema.required : [];
       let properties: Record<string, ts.Expression> = {};
+
       if (schema.properties) {
         Object.keys(schema.properties).forEach((key) => {
-          properties[key] = toSchemaTsNode(
+          const expression = toSchemaTsNode(
             schema.properties[key] as JsonSchema
           );
+
+          properties[key] = required.includes(key)
+            ? expression
+            : TSFactoryUtils.combinator("optional")(expression);
         });
-        return TSFactoryUtils.struct(properties);
-      } else return TSFactoryUtils.object;
+        root =  TSFactoryUtils.struct(properties);
+      } 
+
+      else if (schema.patternProperties) {
+        const key = Object.keys(schema.patternProperties)[0];
+
+        root = TSFactoryUtils.combinator("record")(
+          pipe(toSchemaTsNode(schema.patternProperties[key] as JsonSchema), TSFactoryUtils.callMethod("pipe", [
+            TSFactoryUtils.primitive("pattern", [
+              ts.factory.createRegularExpressionLiteral(`/${key}/`),
+            ])
+          ])),
+          toSchemaTsNode(schema.patternProperties[key] as JsonSchema)
+        );
+      }
+      
+      else {
+        root =  TSFactoryUtils.object;
+      }
+
+      return applyFilters(root)
     }
     case "null":
       return TSFactoryUtils.null;
@@ -196,6 +247,13 @@ const toSchemaTsNode = (schema: JsonSchema): ts.Expression => {
           ...schema.oneOf.map((s) => toSchemaTsNode(s as any))
         )
       }
+
+      // anyOf 
+      if(schema.anyOf && !isBoolean(schema.anyOf)) {
+        return TSFactoryUtils.union(
+          ...schema.anyOf.map((s) => toSchemaTsNode(s as any))
+        )
+      }
     }
   }
 };
@@ -224,7 +282,7 @@ export const toFile = (schema: JsonSchema, config: Config = defaultConfig): stri
           ts.factory.createIdentifier(title),
           undefined,
           undefined,
-          toSchemaTsNode(schema),      
+          toSchemaTsNode(schema, config),      
         )],
         ts.NodeFlags.Const
       )

@@ -6,8 +6,38 @@ const expectToRender = (schema: _.JsonSchema, result: string) =>
     expect(_.toSchemaString(schema)).toEqual(result)
 
 describe("JSON Schema", () => {
+    it("string", () => expectToRender({ type: "string" }, "S.string"))
     it("boolean", () => expectToRender({ type: "boolean" }, "S.boolean"))
     it("null", () => expectToRender({ type: "null" }, "S.null"))
+
+    it("title", () => {
+      const schema: _.JsonSchema = {
+        type: "string",
+        title: "foo",
+      };
+
+      expectToRender(schema, 'S.string.pipe(S.title("foo"))');
+    })
+
+    it("examples", () => {
+      const schema: _.JsonSchema = {
+        type: "string",
+        examples: ["foo"],
+      };
+
+      expectToRender(schema, 'S.string.pipe(S.examples(["foo"]))');
+    })
+
+    it("description", () => {
+      const schema: _.JsonSchema = {
+        type: "string",
+        description: "foo",
+      };
+
+      expectToRender(schema, 'S.string.pipe(S.description("foo"))');
+    })
+
+    // object
 
     it("object", () => expectToRender({ type: "object" }, "S.object"))
 
@@ -17,8 +47,17 @@ describe("JSON Schema", () => {
         properties: { foo: { type: "string" } },
       };
 
-      expectToRender(obj, "S.struct({ foo: S.string })");
+      expectToRender(obj, "S.struct({ foo: S.optional(S.string) })");
     });
+
+    it("object/ patternProperties", () => {
+      const obj: _.JsonSchema = {
+        type: "object",
+        patternProperties: { "^S_": { type: "string" } },
+      };
+
+      expectToRender(obj, "S.record(S.string.pipe(S.pattern(/^S_/)), S.string)");
+    })
 
     // numbers
 
@@ -63,8 +102,6 @@ describe("JSON Schema", () => {
 
     // strings
 
-    it("string", () => expectToRender({ type: "string" }, "S.string"))
-
     it("string/ minLength", () =>
       expectToRender(
         { type: "string", minLength: 4 },
@@ -88,7 +125,7 @@ describe("JSON Schema", () => {
         { type: "string", pattern: "^[a-z]+$" },
         "S.string.pipe(S.pattern(/^[a-z]+$/))"
       ));
-    
+ 
     it("string/ enum", () =>
       expectToRender(
         { type: "string", enum: ["foo", "bar"] },
@@ -124,7 +161,7 @@ describe("JSON Schema", () => {
     it("array/ items(object)", () =>
       expectToRender(
         { type: "array", items: { type: "object", properties: { foo: { type: "string" } } } },
-        "S.array(S.struct({ foo: S.string }))"
+        "S.array(S.struct({ foo: S.optional(S.string) }))"
       ));
 
     it("array/ items(string, number)", () =>
@@ -140,7 +177,18 @@ describe("JSON Schema", () => {
           { type: "number" },
         ]
       }
-
       expectToRender(schema, "S.union(S.string, S.number)")
     })
+    
+    it("anyOf", () =>{
+      const schema: _.JsonSchema = {
+        anyOf: [
+          { type: "string" },
+          { type: "number" },
+        ]
+      }
+    
+      expectToRender(schema, "S.union(S.string, S.number)")
+    })
+
 })
