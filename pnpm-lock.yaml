@@ -8,6 +8,9 @@ dependencies:
   '@apidevtools/json-schema-ref-parser':
     specifier: ^10.1.0
     version: 10.1.0
+  '@effect/cli':
+    specifier: 0.20.1
+    version: 0.20.1(@effect/printer-ansi@0.22.1)(@effect/printer@0.13.0)(@effect/schema@0.47.2)(effect@2.0.0-next.54)
   '@effect/data':
     specifier: ^0.17.6
     version: 0.17.6
@@ -317,6 +320,20 @@ packages:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
 
+  /@effect/cli@0.20.1(@effect/printer-ansi@0.22.1)(@effect/printer@0.13.0)(@effect/schema@0.47.2)(effect@2.0.0-next.54):
+    resolution: {integrity: sha512-MxcEa6o5tyS1z3HZxZ+xWXbLAI+a1E3eoYrua6zMm3Kfua2FnlZTz+juDFQN2wREN1KnOJJnb2ZucEa+JTQcfA==}
+    peerDependencies:
+      '@effect/printer': ^0.22.1
+      '@effect/printer-ansi': ^0.22.1
+      '@effect/schema': ^0.47.1
+      effect: 2.0.0-next.54
+    dependencies:
+      '@effect/printer': 0.13.0(@effect/data@0.17.6)(@effect/io@0.38.2)(@effect/typeclass@0.3.0)
+      '@effect/printer-ansi': 0.22.1(@effect/typeclass@0.3.0)(effect@2.0.0-next.54)
+      '@effect/schema': 0.47.2(effect@2.0.0-next.54)(fast-check@3.13.2)
+      effect: 2.0.0-next.54
+    dev: false
+
   /@effect/data@0.17.6:
     resolution: {integrity: sha512-/vwz7Jh05eS0qY8kczR/YyJd18d0C+PMtUkAealh4f6gwvhABLGCnktNJTcq/+UHxY0Cbv18r5uaJ4+7PPC+WQ==}
     dev: false
@@ -385,6 +402,17 @@ packages:
       path-browserify: 1.0.1
     dev: false
 
+  /@effect/printer-ansi@0.22.1(@effect/typeclass@0.3.0)(effect@2.0.0-next.54):
+    resolution: {integrity: sha512-NDyilEalzy7skoGiXVTP7OkPAlG/q8B0p8rKf9e0v3a2NadLCQEm4wNKLSYPcZN/ABRQCz2Wpml4+bO75vFu+g==}
+    peerDependencies:
+      '@effect/typeclass': ^0.14.1
+      effect: 2.0.0-next.54
+    dependencies:
+      '@effect/printer': 0.22.1(@effect/typeclass@0.3.0)(effect@2.0.0-next.54)
+      '@effect/typeclass': 0.3.0
+      effect: 2.0.0-next.54
+    dev: false
+
   /@effect/printer@0.13.0(@effect/data@0.17.6)(@effect/io@0.38.2)(@effect/typeclass@0.3.0):
     resolution: {integrity: sha512-vqKilbg36AEHZJNj9fiV6qUALojR2kVePKbuJJAkaGQao9Duc6rL3QSbaGEaEzar6v68j6TGTOndg/inI2bQFA==}
     peerDependencies:
@@ -395,6 +423,16 @@ packages:
       '@effect/data': 0.17.6
       '@effect/io': 0.38.2(@effect/data@0.17.6)
       '@effect/typeclass': 0.3.0
+    dev: false
+
+  /@effect/printer@0.22.1(@effect/typeclass@0.3.0)(effect@2.0.0-next.54):
+    resolution: {integrity: sha512-htgznG6+zAKI3RqOwMJrdpgIbBqcjXfoTXCF1kFf3zW72B/h9KD6dG7A0NyROkvZkGS7S2MSxPuqkqBXIDdKgw==}
+    peerDependencies:
+      '@effect/typeclass': ^0.14.1
+      effect: 2.0.0-next.54
+    dependencies:
+      '@effect/typeclass': 0.3.0
+      effect: 2.0.0-next.54
     dev: false
 
   /@effect/schema@0.33.2(@effect/data@0.17.6)(@effect/io@0.38.2):

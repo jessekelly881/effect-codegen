@@ -1,10 +1,11 @@
 #!/usr/bin/env tsx
 
+import { CliApp, Command, HelpDoc, Options } from "@effect/cli";
+import * as Span from "@effect/cli/HelpDoc/Span";
 import * as FileSystem from "@effect/platform-node/FileSystem";
 import * as Path from "@effect/platform-node/Path";
-import { runMain } from "@effect/platform-node/Runtime";
 import { Parser, Schema } from "@effect/schema";
-import { Console, Effect, Layer } from "effect";
+import { Console, Data, Effect, Layer, pipe } from "effect";
 import { ParseYaml } from "./src/utils/Schema";
 
 const openApiSchema = Schema.struct({
@@ -48,6 +49,39 @@ const program = Effect.gen(function* (_) {
 	const obj = yield* _(decodeOpenApiSchema(fileData));
 
 	yield* _(Console.log(obj));
+}).pipe(Effect.orDie, Effect.provide(ctx));
+
+/**
+ * Cli
+ */
+
+export interface Git extends Data.Case {
+	readonly version: boolean;
+}
+
+export const Git = Data.case<Git>();
+
+const run: Command.Command<Git> = pipe(
+	Command.make("run", {
+		options: Options.alias(Options.boolean("version"), "v")
+	}),
+	Command.map(({ options: version }) => Git({ version }))
+);
+
+const cli = CliApp.make({
+	name: "Git Version Control",
+	version: "0.9.2",
+	command: run,
+	summary: Span.text("a client for the git dvcs protocol"),
+	footer: HelpDoc.p("Copyright 2023")
 });
 
-program.pipe(Effect.orDie, Effect.provide(ctx), runMain);
+pipe(
+	Effect.sync(() => process.argv.slice(2)),
+	Effect.flatMap((args) =>
+		CliApp.run(cli, args, ({ version }) =>
+			version ? Console.log(cli.version) : program
+		)
+	),
+	Effect.runFork
+);
