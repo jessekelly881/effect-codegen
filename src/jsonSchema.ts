@@ -166,13 +166,23 @@ const toSchemaTsNode = (schema: JsonSchema, config: Config = defaultConfig): ts.
 
       if (schema.properties) {
         Object.keys(schema.properties).forEach((key) => {
+          const booleanLiteral = (p: boolean) => p ? ts.factory.createTrue() : ts.factory.createFalse();
+          const isRequired = required.includes(key);
+          const value = schema.properties[key];
+          const hasDefault = !isBoolean(value) && "default" in value;
+
+          const defaultLiteral =
+            hasDefault ? isBoolean(value.default) ?
+              booleanLiteral(value.default)
+              : undefined : undefined;
+
           const expression = toSchemaTsNode(
             schema.properties[key] as JsonSchema
           );
 
-          properties[key] = required.includes(key)
+          properties[key] = isRequired
             ? expression
-            : TSFactoryUtils.combinator("optional")(expression);
+            : TSFactoryUtils.optional(expression, defaultLiteral ? defaultLiteral : undefined);
         });
         root =  TSFactoryUtils.struct(properties);
       } 

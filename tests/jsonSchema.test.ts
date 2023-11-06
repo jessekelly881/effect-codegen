@@ -1,4 +1,4 @@
-import * as _ from "../src/jsonSchema";
+import * as _ from "../src/JsonSchema";
 import { describe, it, expect } from "vitest"
 
 

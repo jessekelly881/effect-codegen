@@ -1,4 +1,14 @@
+import { pipe } from "@effect/data/Function";
 import ts from "typescript";
+
+export const addJsDocComment = (node: ts.Node, documentation: string): void => {
+  ts.addSyntheticLeadingComment(
+    node,
+    ts.SyntaxKind.MultiLineCommentTrivia,
+    `* ${documentation} `,
+    true
+  );
+};
 
 export const toString = (
   nodes: ts.Node[],
@@ -76,6 +86,25 @@ export const struct = (properties: Record<string, ts.Expression>) =>
       ts.factory.createPropertyAssignment(s, properties[s])
     )
   ))
+
+export const optional = (expression: ts.Expression, defaultValue?: ts.Expression) => {
+  const optionalExpression = combinator("optional")(expression);
+  return defaultValue
+    ? pipe(
+        optionalExpression,
+        callMethod("withDefault", [
+          ts.factory.createArrowFunction(
+            undefined,
+            undefined,
+            [],
+            undefined,
+            ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+           defaultValue 
+          )
+        ])
+      )
+    : optionalExpression;
+}
 
 export {
     null_ as null,

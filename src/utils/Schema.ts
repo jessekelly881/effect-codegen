@@ -1,27 +1,27 @@
-import * as S from "@effect/schema/Schema";
-import * as PR from "@effect/schema/ParseResult";
+import { ParseResult, Schema } from "@effect/schema";
+import YAML from "yaml";
 
-// Borrowed from @effect/schema head
-// TODO: Remove me when updating @effect/schema/Schema
-export const parseJson = <I, A extends string>(self: S.Schema<I, A>, options?: {
-    reviver?: Parameters<typeof JSON.parse>[1]
-    replacer?: Parameters<typeof JSON.stringify>[1]
-    space?: Parameters<typeof JSON.stringify>[2]
-  }): S.Schema<I, unknown> => {
-    const schema: S.Schema<I, unknown> = S.transformResult(self, S.unknown, (s) => {
-      try {
-        return PR.success<unknown>(JSON.parse(s, options?.reviver))
-      } catch (e: any) {
-        return PR.failure(PR.type(schema.ast, s, e.message))
-      }
-    }, (u) => {
-      try {
-        return PR.success(JSON.stringify(u, options?.replacer, options?.space) as A) // this is safe because `self` will check its input anyway
-      } catch (e: any) {
-        return PR.failure(PR.type(schema.ast, u, e.message))
-      }
-    })
-    return schema
-  }
+export const parseYaml = <I, A extends string>(self: Schema.Schema<I, A>) =>
+	Schema.transformOrFail(
+		self,
+		Schema.unknown,
+		(s, _, ast) => {
+			try {
+				return ParseResult.success<unknown>(YAML.parse(s));
+			} catch (e: any) {
+				return ParseResult.failure(ParseResult.type(ast, s, e.message));
+			}
+		},
+		(u, _, ast) => {
+			try {
+				return ParseResult.success(YAML.stringify(u));
+			} catch (e: any) {
+				return ParseResult.failure(ParseResult.type(ast, u, e.message));
+			}
+		},
+		{ strict: false }
+	);
 
-export const ParseJson: S.Schema<string, unknown> = parseJson(S.string)
+export const ParseYaml: Schema.Schema<string, unknown> = parseYaml(
+	Schema.string
+);
