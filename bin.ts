@@ -6,6 +6,7 @@ import * as FileSystem from "@effect/platform-node/FileSystem";
 import * as Path from "@effect/platform-node/Path";
 import { Parser, Schema } from "@effect/schema";
 import { Console, Data, Effect, Layer, pipe } from "effect";
+import packageJson from "./package.json";
 import { ParseYaml } from "./src/utils/Schema";
 
 const openApiSchema = Schema.struct({
@@ -55,22 +56,22 @@ const program = Effect.gen(function* (_) {
  * Cli
  */
 
-export interface Git extends Data.Case {
+export interface CliMain extends Data.Case {
 	readonly version: boolean;
 }
 
-export const Git = Data.case<Git>();
+export const CliMain = Data.case<CliMain>();
 
-const run: Command.Command<Git> = pipe(
+const run: Command.Command<CliMain> = pipe(
 	Command.make("run", {
 		options: Options.alias(Options.boolean("version"), "v")
 	}),
-	Command.map(({ options: version }) => Git({ version }))
+	Command.map(({ options: version }) => CliMain({ version }))
 );
 
 const cli = CliApp.make({
 	name: "Git Version Control",
-	version: "0.9.2",
+	version: packageJson.version,
 	command: run,
 	summary: Span.text("a client for the git dvcs protocol"),
 	footer: HelpDoc.p("Copyright 2023")
