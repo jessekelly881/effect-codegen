@@ -13,6 +13,12 @@ const openApiSchema = Schema.struct({
 		description: Schema.string,
 		version: Schema.string
 	}),
+	servers: Schema.array(
+		Schema.struct({
+			description: Schema.string,
+			url: Schema.string
+		})
+	),
 	paths: Schema.record(
 		Schema.string,
 		Schema.record(
