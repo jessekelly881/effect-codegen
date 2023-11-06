@@ -70,10 +70,10 @@ const run: Command.Command<CliMain> = pipe(
 );
 
 const cli = CliApp.make({
-	name: "Git Version Control",
+	name: "@effect/schema codegen",
 	version: packageJson.version,
 	command: run,
-	summary: Span.text("a client for the git dvcs protocol"),
+	summary: Span.text("a codegen cli for @effect/schema"),
 	footer: HelpDoc.p("Copyright 2023")
 });
 
