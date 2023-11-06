@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
     "noEmit": true,
-    "target":"ES2016",
+    "target": "ES2016",
     "module": "commonjs",
     "noImplicitAny": true,
     "removeComments": true,
@@ -10,8 +12,18 @@
     "esModuleInterop": true,
     "types": [
       "node"
-    ]
+    ],
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.spec.ts"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ]
 }
