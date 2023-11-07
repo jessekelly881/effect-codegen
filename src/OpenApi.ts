@@ -45,7 +45,24 @@ const HttpMethod = Schema.literal(
 	"trace"
 );
 
+const Response = Schema.struct({
+	description: Schema.string.pipe(Schema.optional)
+});
+
+// e.g. GET /users
+const Endpoint = Schema.struct({
+	operationId: Schema.string,
+	description: Schema.string,
+	summary: Schema.string.pipe(Schema.optional),
+	responses: Schema.record(Schema.string, Response).pipe(Schema.optional),
+	externalDocs: Schema.struct({
+		url: Schema.string,
+		description: Schema.string.pipe(Schema.optional)
+	})
+}).pipe(Schema.partial);
+
 export const OpenApiSchema = Schema.struct({
+	basePath: Schema.string.pipe(Schema.optional),
 	info: Schema.struct({
 		title: Schema.string,
 		description: Schema.string.pipe(Schema.optional),
@@ -59,13 +76,7 @@ export const OpenApiSchema = Schema.struct({
 	).pipe(Schema.optional),
 	paths: Schema.record(
 		Schema.string,
-		Schema.record(
-			HttpMethod,
-			Schema.struct({
-				operationId: Schema.string,
-				description: Schema.string
-			}).pipe(Schema.partial)
-		).pipe(Schema.partial)
+		Schema.record(HttpMethod, Endpoint).pipe(Schema.partial)
 	).pipe(Schema.optional), // TODO: Decide what to do about missing paths
 
 	components: Schema.struct({
