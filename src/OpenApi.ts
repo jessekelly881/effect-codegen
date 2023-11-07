@@ -4,16 +4,26 @@
 import { ParseYaml } from "@/utils/Schema";
 import { Parser, Schema } from "@effect/schema";
 
+interface DataModel {
+	readonly $ref?: string;
+
+	readonly description?: string;
+	readonly example?: string;
+	readonly type?: "string" | "integer" | "number" | "object" | "boolean";
+}
+
 /**
  * JSON Schema-ish OpenApi Schema definition
  */
-const DataModel = Schema.struct({
-	$ref: Schema.string,
+const DataModel: Schema.Schema<DataModel> = Schema.lazy<DataModel>(() =>
+	Schema.struct({
+		$ref: Schema.string,
 
-	description: Schema.string,
-	example: Schema.string,
-	type: Schema.literal("string", "integer", "number", "object", "boolean")
-}).pipe(Schema.partial);
+		description: Schema.string,
+		example: Schema.string,
+		type: Schema.literal("string", "integer", "number", "object", "boolean")
+	}).pipe(Schema.partial)
+);
 
 const HttpMethod = Schema.literal(
 	"get",
