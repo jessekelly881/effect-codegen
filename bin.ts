@@ -39,18 +39,20 @@ const decodeOpenApiSchema = ParseYaml.pipe(
 
 const ctx = Layer.mergeAll(FileSystem.layer, Path.layer);
 
-const program = Effect.gen(function* (_) {
-	const fs = yield* _(FileSystem.FileSystem);
-	const path = yield* _(Path.Path);
+const compileSchema = (inputFile: string) =>
+	Effect.gen(function* (_) {
+		const fs = yield* _(FileSystem.FileSystem);
+		const path = yield* _(Path.Path);
 
-	const fileData = yield* _(
-		fs.readFileString(path.join(__dirname, "test.yml"))
-	);
+		const fileData = yield* _(
+			fs.readFileString(path.join(__dirname, inputFile)),
+			Effect.tapError((e) => Console.error(`File ${inputFile} not found`))
+		);
 
-	const obj = yield* _(decodeOpenApiSchema(fileData));
+		const obj = yield* _(decodeOpenApiSchema(fileData));
 
-	yield* _(Console.log(obj));
-}).pipe(Effect.orDie, Effect.provide(ctx));
+		yield* _(Console.log(obj));
+	}).pipe(Effect.provide(ctx));
 
 /**
  * Cli
@@ -80,8 +82,11 @@ const cli = CliApp.make({
 pipe(
 	Effect.sync(() => process.argv.slice(2)),
 	Effect.flatMap((args) =>
-		CliApp.run(cli, args, ({ version }) =>
-			version ? Console.log(cli.version) : program
+		CliApp.run(
+			cli,
+			args,
+			({ version }) =>
+				version ? Console.log(cli.version) : compileSchema(args[0]) // args[0] is the input file
 		)
 	),
 	Effect.runFork
