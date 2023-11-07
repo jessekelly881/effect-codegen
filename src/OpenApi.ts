@@ -48,9 +48,9 @@ const HttpMethod = Schema.literal(
 export const OpenApiSchema = Schema.struct({
 	info: Schema.struct({
 		title: Schema.string,
-		description: Schema.string,
+		description: Schema.string.pipe(Schema.optional),
 		version: Schema.string
-	}).pipe(Schema.partial),
+	}),
 	servers: Schema.array(
 		Schema.struct({
 			description: Schema.string.pipe(Schema.optional),
@@ -66,7 +66,7 @@ export const OpenApiSchema = Schema.struct({
 				description: Schema.string
 			}).pipe(Schema.partial)
 		).pipe(Schema.partial)
-	).pipe(Schema.optional),
+	),
 
 	components: Schema.struct({
 		schemas: Schema.record(Schema.string, DataModel)
