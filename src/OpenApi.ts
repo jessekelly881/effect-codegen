@@ -4,6 +4,26 @@
 import { ParseYaml } from "@/utils/Schema";
 import { Parser, Schema } from "@effect/schema";
 
+/**
+ * JSON Schema-ish OpenApi Schema definition
+ */
+const DataType = Schema.struct({
+	description: Schema.string,
+	example: Schema.string,
+	type: Schema.literal("string", "integer")
+}).pipe(Schema.partial);
+
+const HttpMethod = Schema.literal(
+	"get",
+	"put",
+	"post",
+	"delete",
+	"options",
+	"head",
+	"patch",
+	"trace"
+);
+
 export const OpenApiSchema = Schema.struct({
 	info: Schema.struct({
 		title: Schema.string,
@@ -19,11 +39,12 @@ export const OpenApiSchema = Schema.struct({
 	paths: Schema.record(
 		Schema.string,
 		Schema.record(
-			Schema.string,
+			HttpMethod,
 			Schema.struct({
-				operationId: Schema.string
+				operationId: Schema.string,
+				description: Schema.string
 			})
-		)
+		).pipe(Schema.partial)
 	).pipe(Schema.optional)
 });
 
