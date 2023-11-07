@@ -5,6 +5,7 @@ import { CliApp, Command, HelpDoc, Options } from "@effect/cli";
 import * as Span from "@effect/cli/HelpDoc/Span";
 import * as FileSystem from "@effect/platform-node/FileSystem";
 import * as Path from "@effect/platform-node/Path";
+import { ArrayFormatter } from "@effect/schema";
 import { Console, Data, Effect, Layer, pipe } from "effect";
 
 const compileSchema = (inputFile: string) =>
@@ -60,5 +61,8 @@ pipe(
 		)
 	),
 	Effect.provide(ctx),
+	Effect.tapErrorTag("ParseError", (e) =>
+		Console.error(ArrayFormatter.formatErrors(e.errors))
+	),
 	Effect.runFork
 );
