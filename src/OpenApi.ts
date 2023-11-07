@@ -7,7 +7,9 @@ import { Parser, Schema } from "@effect/schema";
 /**
  * JSON Schema-ish OpenApi Schema definition
  */
-const DataType = Schema.struct({
+const DataModel = Schema.struct({
+	$ref: Schema.string,
+
 	description: Schema.string,
 	example: Schema.string,
 	type: Schema.literal("string", "integer")
@@ -29,13 +31,13 @@ export const OpenApiSchema = Schema.struct({
 		title: Schema.string,
 		description: Schema.string,
 		version: Schema.string
-	}),
+	}).pipe(Schema.partial),
 	servers: Schema.array(
 		Schema.struct({
-			description: Schema.string,
+			description: Schema.string.pipe(Schema.optional),
 			url: Schema.string
 		})
-	),
+	).pipe(Schema.optional),
 	paths: Schema.record(
 		Schema.string,
 		Schema.record(
@@ -43,7 +45,7 @@ export const OpenApiSchema = Schema.struct({
 			Schema.struct({
 				operationId: Schema.string,
 				description: Schema.string
-			})
+			}).pipe(Schema.partial)
 		).pipe(Schema.partial)
 	).pipe(Schema.optional)
 });
