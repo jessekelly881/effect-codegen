@@ -4,12 +4,21 @@
 import { ParseYaml } from "@/utils/Schema";
 import { Parser, Schema } from "@effect/schema";
 
+const Type = Schema.literal(
+	"string",
+	"integer",
+	"number",
+	"object",
+	"boolean",
+	"array"
+);
+
 interface DataModel {
 	readonly $ref?: string;
 
 	readonly description?: string;
 	readonly example?: string;
-	readonly type?: "string" | "integer" | "number" | "object" | "boolean";
+	readonly type?: Schema.Schema.To<typeof Type>;
 }
 
 /**
@@ -21,7 +30,7 @@ const DataModel: Schema.Schema<DataModel> = Schema.lazy<DataModel>(() =>
 
 		description: Schema.string,
 		example: Schema.string,
-		type: Schema.literal("string", "integer", "number", "object", "boolean")
+		type: Type
 	}).pipe(Schema.partial)
 );
 
