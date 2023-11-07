@@ -1,40 +1,11 @@
 #!/usr/bin/env tsx
 
-import { ParseYaml } from "@/utils/Schema";
+import * as OpenApi from "@/OpenApi";
 import { CliApp, Command, HelpDoc, Options } from "@effect/cli";
 import * as Span from "@effect/cli/HelpDoc/Span";
 import * as FileSystem from "@effect/platform-node/FileSystem";
 import * as Path from "@effect/platform-node/Path";
-import { Parser, Schema } from "@effect/schema";
 import { Console, Data, Effect, Layer, pipe } from "effect";
-
-const openApiSchema = Schema.struct({
-	info: Schema.struct({
-		title: Schema.string,
-		description: Schema.string,
-		version: Schema.string
-	}),
-	servers: Schema.array(
-		Schema.struct({
-			description: Schema.string,
-			url: Schema.string
-		})
-	),
-	paths: Schema.record(
-		Schema.string,
-		Schema.record(
-			Schema.string,
-			Schema.struct({
-				operationId: Schema.string
-			})
-		)
-	).pipe(Schema.optional)
-});
-
-const decodeOpenApiSchema = ParseYaml.pipe(
-	Schema.compose(openApiSchema),
-	Parser.decode
-);
 
 const compileSchema = (inputFile: string) =>
 	Effect.gen(function* (_) {
@@ -46,7 +17,7 @@ const compileSchema = (inputFile: string) =>
 			Effect.tapError(() => Console.error(`File ${inputFile} not found`))
 		);
 
-		const obj = yield* _(decodeOpenApiSchema(fileData));
+		const obj = yield* _(OpenApi.decodeFromString(fileData));
 
 		yield* _(Console.log(obj));
 	});
