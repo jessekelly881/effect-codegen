@@ -12,7 +12,7 @@ const DataModel = Schema.struct({
 
 	description: Schema.string,
 	example: Schema.string,
-	type: Schema.literal("string", "integer")
+	type: Schema.literal("string", "integer", "number", "object", "boolean")
 }).pipe(Schema.partial);
 
 const HttpMethod = Schema.literal(
@@ -47,7 +47,11 @@ export const OpenApiSchema = Schema.struct({
 				description: Schema.string
 			}).pipe(Schema.partial)
 		).pipe(Schema.partial)
-	).pipe(Schema.optional)
+	).pipe(Schema.optional),
+
+	components: Schema.struct({
+		schemas: Schema.record(Schema.string, DataModel)
+	}).pipe(Schema.optional)
 });
 
 export type OpenApiSchema = Schema.Schema.To<typeof OpenApiSchema>;
