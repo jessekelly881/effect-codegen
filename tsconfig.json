@@ -10,9 +10,11 @@
     "moduleResolution": "node",
     "preserveConstEnums": true,
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "types": [
       "node"
     ],
+    "baseUrl": ".",
     "paths": {
       "@/*": [
         "./src/*"

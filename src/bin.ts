@@ -1,13 +1,13 @@
 #!/usr/bin/env tsx
 
+import { ParseYaml } from "@/utils/Schema";
 import { CliApp, Command, HelpDoc, Options } from "@effect/cli";
 import * as Span from "@effect/cli/HelpDoc/Span";
 import * as FileSystem from "@effect/platform-node/FileSystem";
 import * as Path from "@effect/platform-node/Path";
 import { Parser, Schema } from "@effect/schema";
 import { Console, Data, Effect, Layer, pipe } from "effect";
-import packageJson from "./package.json";
-import { ParseYaml } from "./src/utils/Schema";
+import packageJson from "../package.json";
 
 const openApiSchema = Schema.struct({
 	info: Schema.struct({
