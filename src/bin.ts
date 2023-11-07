@@ -7,7 +7,6 @@ import * as FileSystem from "@effect/platform-node/FileSystem";
 import * as Path from "@effect/platform-node/Path";
 import { Parser, Schema } from "@effect/schema";
 import { Console, Data, Effect, Layer, pipe } from "effect";
-import packageJson from "../package.json";
 
 const openApiSchema = Schema.struct({
 	info: Schema.struct({
@@ -71,7 +70,7 @@ const run: Command.Command<CliMain> = pipe(
 
 const cli = CliApp.make({
 	name: "@effect/schema codegen",
-	version: packageJson.version,
+	version: "0.0.1",
 	command: run,
 	summary: Span.text("a codegen cli for @effect/schema"),
 	footer: HelpDoc.p("Copyright 2023")
