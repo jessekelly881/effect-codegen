@@ -22,15 +22,13 @@ const expectRight = <E, A>(e: Either.Either<E, A>) => {
 };
 
 const dirPath = path.join(__dirname, "fixtures");
-let files: [string, string][] = []; // [fileName, contents][]
-fs.readdirSync(dirPath).forEach((fileName) => {
-	const filePath = path.join(dirPath, fileName);
-	const contents = fs.readFileSync(filePath).toString();
-	files.push([fileName, contents]);
-});
+const filePaths = fs
+	.readdirSync(dirPath)
+	.map((fileName) => path.join(dirPath, fileName));
 
 describe("OpenApi/decodeFromString", () => {
-	it.each(files)("should decode %s", (_, contents) => {
+	it.each(filePaths)("should decode %s", (path) => {
+		const contents = fs.readFileSync(path).toString();
 		const result = Either.mapLeft(parseFile(contents), (err) =>
 			TreeFormatter.formatErrors(err.errors)
 		);
