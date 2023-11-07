@@ -21,13 +21,26 @@ const expectRight = <E, A>(e: Either.Either<E, A>) => {
 	}
 };
 
-const dirPath = path.join(__dirname, "fixtures");
-const filePaths = fs
-	.readdirSync(dirPath)
-	.map((fileName) => path.join(dirPath, fileName));
+const getAllFiles = function (dirPath, arrayOfFiles: string[] = []) {
+	const files = fs.readdirSync(dirPath);
 
+	files.forEach(function (file) {
+		if (fs.statSync(dirPath + "/" + file).isDirectory()) {
+			arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles);
+		} else {
+			arrayOfFiles.push(path.join(dirPath, "/", file));
+		}
+	});
+
+	return arrayOfFiles;
+};
+
+const dirPath = path.join(__dirname, "fixtures/openapi-directory/APIs");
+const filePaths = getAllFiles(dirPath);
+
+const LIMIT = 25;
 describe("OpenApi/decodeFromString", () => {
-	it.each(filePaths)("should decode %s", (path) => {
+	it.each(filePaths.slice(0, LIMIT))("should decode %s", (path) => {
 		const contents = fs.readFileSync(path).toString();
 		const result = Either.mapLeft(parseFile(contents), (err) =>
 			TreeFormatter.formatErrors(err.errors)

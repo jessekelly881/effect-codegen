@@ -17,7 +17,7 @@ interface DataModel {
 	readonly $ref?: string;
 
 	readonly description?: string;
-	readonly example?: string;
+	readonly example?: string | object; // TODO: stringify
 	readonly type?: Schema.Schema.To<typeof Type>;
 }
 
@@ -29,7 +29,7 @@ const DataModel: Schema.Schema<DataModel> = Schema.lazy<DataModel>(() =>
 		$ref: Schema.string,
 
 		description: Schema.string,
-		example: Schema.string,
+		example: Schema.union(Schema.string, Schema.object),
 		type: Type
 	}).pipe(Schema.partial)
 );
@@ -66,7 +66,7 @@ export const OpenApiSchema = Schema.struct({
 				description: Schema.string
 			}).pipe(Schema.partial)
 		).pipe(Schema.partial)
-	),
+	).pipe(Schema.optional), // TODO: Decide what to do about missing paths
 
 	components: Schema.struct({
 		schemas: Schema.record(Schema.string, DataModel)
