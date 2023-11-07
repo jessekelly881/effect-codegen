@@ -37,8 +37,6 @@ const decodeOpenApiSchema = ParseYaml.pipe(
 	Parser.decode
 );
 
-const ctx = Layer.mergeAll(FileSystem.layer, Path.layer);
-
 const compileSchema = (inputFile: string) =>
 	Effect.gen(function* (_) {
 		const fs = yield* _(FileSystem.FileSystem);
@@ -46,23 +44,23 @@ const compileSchema = (inputFile: string) =>
 
 		const fileData = yield* _(
 			fs.readFileString(path.join(__dirname, inputFile)),
-			Effect.tapError((e) => Console.error(`File ${inputFile} not found`))
+			Effect.tapError(() => Console.error(`File ${inputFile} not found`))
 		);
 
 		const obj = yield* _(decodeOpenApiSchema(fileData));
 
 		yield* _(Console.log(obj));
-	}).pipe(Effect.provide(ctx));
+	});
 
 /**
  * Cli
  */
 
-export interface CliMain extends Data.Case {
+interface CliMain extends Data.Case {
 	readonly version: boolean;
 }
 
-export const CliMain = Data.case<CliMain>();
+const CliMain = Data.case<CliMain>();
 
 const run: Command.Command<CliMain> = pipe(
 	Command.make("run", {
@@ -79,6 +77,8 @@ const cli = CliApp.make({
 	footer: HelpDoc.p("Copyright 2023")
 });
 
+const ctx = Layer.mergeAll(FileSystem.layer, Path.layer);
+
 pipe(
 	Effect.sync(() => process.argv.slice(2)),
 	Effect.flatMap((args) =>
@@ -89,5 +89,6 @@ pipe(
 				version ? Console.log(cli.version) : compileSchema(args[0]) // args[0] is the input file
 		)
 	),
+	Effect.provide(ctx),
 	Effect.runFork
 );
