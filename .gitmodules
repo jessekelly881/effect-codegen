@@ -1,0 +1,3 @@
+[submodule "tests/fixtures/openapi-directory"]
+	path = tests/fixtures/openapi-directory
+	url = https://github.com/APIs-guru/openapi-directory
